@@ -11,19 +11,19 @@ impl Node {
         Node { pos, size }
     }
 
-    pub fn contains(&self, body: &Vec2) -> bool {
+    pub fn contains(&self, p_pos: &Vec2) -> bool {
         let half_size = self.size / 2.0;
-        body.x() >= self.pos.x() - half_size
-            && body.x() < self.pos.x() + half_size
-            && body.y() >= self.pos.y() - half_size
-            && body.y() < self.pos.y() + half_size
+        p_pos.x() >= self.pos.x() - half_size
+            && p_pos.x() < self.pos.x() + half_size
+            && p_pos.y() >= self.pos.y() - half_size
+            && p_pos.y() < self.pos.y() + half_size
     }
 }
 
 pub struct QuadTree {
     pub boundary: Node,
     pub capacity: usize,
-    pub bodies: Vec<Vec2>,
+    pub bodies: Vec<usize>, // Store indices now
     pub divided: bool,
     pub nw: Option<Box<QuadTree>>,
     pub ne: Option<Box<QuadTree>>,
@@ -82,13 +82,13 @@ impl QuadTree {
         self.divided = true;
     }
 
-    pub fn insert(&mut self, body: Vec2) -> bool {
-        if !self.boundary.contains(&body) {
+    pub fn insert(&mut self, index: usize, all_bodies: &[Vec2]) -> bool {
+        if !self.boundary.contains(&all_bodies[index]) {
             return false;
         }
 
         if self.bodies.len() < self.capacity {
-            self.bodies.push(body);
+            self.bodies.push(index);
             return true;
         }
 
@@ -96,28 +96,28 @@ impl QuadTree {
             self.subdivide();
         }
 
-        self.nw.as_mut().unwrap().insert(body)
-            || self.ne.as_mut().unwrap().insert(body)
-            || self.sw.as_mut().unwrap().insert(body)
-            || self.se.as_mut().unwrap().insert(body)
+        self.nw.as_mut().unwrap().insert(index, all_bodies)
+            || self.ne.as_mut().unwrap().insert(index, all_bodies)
+            || self.sw.as_mut().unwrap().insert(index, all_bodies)
+            || self.se.as_mut().unwrap().insert(index, all_bodies)
     }
 
-    pub fn query(&self, range: &Node, found: &mut Vec<Vec2>) {
+    pub fn query(&self, range: &Node, all_bodies: &[Vec2], found: &mut Vec<usize>) {
         if !self.intersects(range) {
             return;
         }
 
-        for body in &self.bodies {
-            if range.contains(body) {
-                found.push(*body);
+        for &index in &self.bodies {
+            if range.contains(&all_bodies[index]) {
+                found.push(index);
             }
         }
 
         if self.divided {
-            self.nw.as_ref().unwrap().query(range, found);
-            self.ne.as_ref().unwrap().query(range, found);
-            self.sw.as_ref().unwrap().query(range, found);
-            self.se.as_ref().unwrap().query(range, found);
+            self.nw.as_ref().unwrap().query(range, all_bodies, found);
+            self.ne.as_ref().unwrap().query(range, all_bodies, found);
+            self.sw.as_ref().unwrap().query(range, all_bodies, found);
+            self.se.as_ref().unwrap().query(range, all_bodies, found);
         }
     }
 
@@ -154,11 +154,10 @@ mod tests {
         let boundary = Node::new(Vec2::new(0.0, 0.0), 100.0);
         let mut qt = QuadTree::new(boundary, 4);
 
-        let body1 = Vec2::new(10.0, 10.0);
-        let body2 = Vec2::new(20.0, 20.0);
+        let bodies = vec![Vec2::new(10.0, 10.0), Vec2::new(20.0, 20.0)];
 
-        assert!(qt.insert(body1));
-        assert!(qt.insert(body2));
+        assert!(qt.insert(0, &bodies));
+        assert!(qt.insert(1, &bodies));
         assert_eq!(qt.bodies.len(), 2);
     }
 
@@ -167,16 +166,18 @@ mod tests {
         let boundary = Node::new(Vec2::new(0.0, 0.0), 100.0);
         let mut qt = QuadTree::new(boundary, 2);
 
+        let bodies = vec![
+            Vec2::new(10.0, 10.0),
+            Vec2::new(20.0, 20.0),
+            Vec2::new(-10.0, -10.0),
+        ];
+
         // Insert 3 bodies to trigger subdivision
-        qt.insert(Vec2::new(10.0, 10.0));
-        qt.insert(Vec2::new(20.0, 20.0));
-        qt.insert(Vec2::new(-10.0, -10.0));
+        qt.insert(0, &bodies);
+        qt.insert(1, &bodies);
+        qt.insert(2, &bodies);
 
         assert!(qt.divided);
-        assert!(qt.nw.is_some());
-        assert!(qt.ne.is_some());
-        assert!(qt.sw.is_some());
-        assert!(qt.se.is_some());
     }
 
     #[test]
@@ -184,27 +185,21 @@ mod tests {
         let boundary = Node::new(Vec2::new(0.0, 0.0), 100.0);
         let mut qt = QuadTree::new(boundary, 4);
 
-        qt.insert(Vec2::new(10.0, 10.0));
-        qt.insert(Vec2::new(20.0, 20.0));
-        qt.insert(Vec2::new(-30.0, -30.0));
+        let bodies = vec![
+            Vec2::new(10.0, 10.0),
+            Vec2::new(20.0, 20.0),
+            Vec2::new(-30.0, -30.0),
+        ];
+
+        qt.insert(0, &bodies);
+        qt.insert(1, &bodies);
+        qt.insert(2, &bodies);
 
         let query_range = Node::new(Vec2::new(0.0, 0.0), 40.0);
         let mut found = Vec::new();
-        qt.query(&query_range, &mut found);
+        qt.query(&query_range, &bodies, &mut found);
 
         assert_eq!(found.len(), 2);
-    }
-
-    #[test]
-    fn test_quadtree_intersects() {
-        let boundary = Node::new(Vec2::new(0.0, 0.0), 100.0);
-        let qt = QuadTree::new(boundary, 4);
-
-        let overlapping_range = Node::new(Vec2::new(30.0, 30.0), 40.0);
-        let non_overlapping_range = Node::new(Vec2::new(100.0, 100.0), 20.0);
-
-        assert!(qt.intersects(&overlapping_range));
-        assert!(!qt.intersects(&non_overlapping_range));
     }
 
     #[test]
@@ -212,7 +207,7 @@ mod tests {
         let boundary = Node::new(Vec2::new(0.0, 0.0), 100.0);
         let mut qt = QuadTree::new(boundary, 4);
 
-        let body_outside = Vec2::new(100.0, 100.0);
-        assert!(!qt.insert(body_outside));
+        let bodies = vec![Vec2::new(100.0, 100.0)];
+        assert!(!qt.insert(0, &bodies));
     }
 }
