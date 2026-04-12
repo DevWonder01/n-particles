@@ -16,11 +16,12 @@ async fn main() {
 
     // 1. Solid Central Body (Sun)
     let mut sun = Vec2::new(center_x, center_y);
-    sun.mass = 100.0;
+    sun.mass = 80.0;
+    sun.fixed = true;
     sim.bodies.push(sun);
 
     // 2. Orbits (Planets)
-    for _ in 0..100 {
+    for _ in 0..10 {
         let angle = fastrand::f64() * std::f64::consts::TAU;
         let dist = fastrand::f64() * 300.0 + 100.0; // Distance from center
 

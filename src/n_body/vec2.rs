@@ -4,6 +4,7 @@ pub struct Vec2 {
     pub vel: [f64; 2],
     pub acc: [f64; 2],
     pub mass: f64,
+    pub fixed: bool,
 }
 
 impl Vec2 {
@@ -13,6 +14,7 @@ impl Vec2 {
             vel: [0.0, 0.0],
             acc: [0.0, 0.0],
             mass: 1.0,
+            fixed: false,
         }
     }
 
@@ -91,6 +93,9 @@ impl Vec2 {
     }
 
     pub fn update(&mut self) {
+        if self.fixed {
+            return;
+        }
         self.vel[0] += self.acc[0];
         self.vel[1] += self.acc[1];
         self.particle[0] += self.vel[0];
@@ -98,6 +103,9 @@ impl Vec2 {
     }
 
     pub fn keep_in_bounds(&mut self, width: f64, height: f64) {
+        if self.fixed {
+            return;
+        }
         let radius = (self.mass / std::f64::consts::PI).sqrt();
 
         // Horizontal bounds
