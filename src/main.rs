@@ -21,7 +21,7 @@ async fn main() {
     sim.bodies.push(sun);
 
     // 2. Orbits (Planets)
-    for _ in 0..10 {
+    for _ in 0..3 {
         let angle = fastrand::f64() * std::f64::consts::TAU;
         let dist = fastrand::f64() * 300.0 + 100.0; // Distance from center
 
