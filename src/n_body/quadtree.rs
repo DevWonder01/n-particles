@@ -131,8 +131,24 @@ impl QuadTree {
             || range.pos.y() + range_half < self.boundary.pos.y() - half_size)
     }
 
+    /// Draw every cell boundary as a rectangle outline (for debug visualisation).
+    pub fn draw(&self) {
+        use macroquad::prelude::*;
+        let half = self.boundary.size / 2.0;
+        let x = (self.boundary.pos.x() - half) as f32;
+        let y = (self.boundary.pos.y() - half) as f32;
+        let s = self.boundary.size as f32;
 
-    
+        draw_rectangle_lines(x, y, s, s, 1.0, Color::from_rgba(0, 200, 100, 60));
+
+        if self.divided {
+            if let Some(ref nw) = self.nw { nw.draw(); }
+            if let Some(ref ne) = self.ne { ne.draw(); }
+            if let Some(ref sw) = self.sw { sw.draw(); }
+            if let Some(ref se) = self.se { se.draw(); }
+        }
+    }
+
 }
 
 #[cfg(test)]

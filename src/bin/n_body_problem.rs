@@ -1,3 +1,4 @@
+use n_particles::n_body::quadtree::{Node, QuadTree};
 use n_particles::n_body::simulate::Simulation;
 use n_particles::n_body::vec2::Vec2;
 
@@ -82,7 +83,7 @@ async fn main() {
 
     // ── Simulation state ──────────────────────────────────────────────
     let mut sim = Simulation::new();
-    let initial_count: usize = 10;
+    let initial_count: usize = 3;
     let mut spawn_count: f32 = initial_count as f32;
     let mut mass_min: f32 = 1.0;
     let mut mass_max: f32 = 21.0;
@@ -142,6 +143,19 @@ async fn main() {
             Color::from_rgba(60, 60, 80, 255),
         );
 
+        // ── QuadTree visualisation ────────────────────────────────────
+        if show_quadtree {
+            let boundary = Node::new(
+                Vec2::new(screen_width() as f64 / 2.0, screen_height() as f64 / 2.0),
+                screen_width().max(screen_height()) as f64,
+            );
+            let mut qt = QuadTree::new(boundary, 4);
+            for i in 0..sim.bodies.len() {
+                qt.insert(i, &sim.bodies);
+            }
+            qt.draw();
+        }
+
         // ── Render particles ──────────────────────────────────────────
         for (i, p) in sim.bodies.iter().enumerate() {
             if i == 0 && has_sun {
@@ -161,8 +175,8 @@ async fn main() {
         egui_macroquad::ui(|egui_ctx| {
             let mut visuals = egui::Visuals::dark();
             // Fully opaque panel — no bleed-through
-            visuals.panel_fill = egui::Color32::from_rgb(22, 22, 32);
-            visuals.window_fill = egui::Color32::from_rgb(22, 22, 32);
+            visuals.panel_fill = egui::Color32::from_rgb(10, 10, 14);
+            visuals.window_fill = egui::Color32::from_rgb(10, 10, 14);
             egui_ctx.set_visuals(visuals);
 
             egui::SidePanel::left("control_panel")
@@ -269,7 +283,7 @@ async fn main() {
                     }
 
                     ui.separator();
-                    ui.checkbox(&mut show_quadtree, "Show QuadTree (TODO)");
+                    ui.checkbox(&mut show_quadtree, "🌲 Show QuadTree");
 
                     ui.separator();
 
