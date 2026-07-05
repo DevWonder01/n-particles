@@ -1,3 +1,3 @@
 pub mod simulate;
-pub mod vec2;
-pub mod quadtree;
+pub mod vec3;
+pub mod octree;
