@@ -78,7 +78,6 @@ cargo build --target wasm32-unknown-unknown --release --bin n_body_problem
 
 ---
 
-<<<<<<< HEAD
 ## Architecture
 
 ```
@@ -140,6 +139,3 @@ $$\vec{v}'_1 = \vec{v}_1 - \frac{2m_2}{m_1+m_2} \frac{\langle\vec{v}_1-\vec{v}_2
 ### Performance drops
 - Turn off **Show Octree** wireframes, as rendering a highly subdivided tree recursively with many active cells uses many draw calls.
 - Compile with the `--release` flag. Rust's debug mode does not optimize vector arithmetic.
-=======
-Star if you find
->>>>>>> 73ac11ee3d2d99eb43733bfc708bb05b9ace0077
