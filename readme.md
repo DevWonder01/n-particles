@@ -4,6 +4,9 @@ A high-performance, interactive 3D N-body gravitational simulation. It uses a cu
 
 ![3D Simulation Sandbox Screenshot](https://raw.githubusercontent.com/macroquad/macroquad/master/logo.png) *(Placeholder - runs locally in hardware-accelerated 3D window)*
 
+<img width="1859" height="1114" alt="image" src="https://github.com/user-attachments/assets/7d4908ab-e996-47e7-9790-d38a9993be89" />
+
+
 ## Features
 
 - **Full 3D Physics Engine** - 3D position, velocity, and acceleration calculations utilizing a custom `Vec3` structure.
@@ -75,6 +78,7 @@ cargo build --target wasm32-unknown-unknown --release --bin n_body_problem
 
 ---
 
+<<<<<<< HEAD
 ## Architecture
 
 ```
@@ -136,3 +140,6 @@ $$\vec{v}'_1 = \vec{v}_1 - \frac{2m_2}{m_1+m_2} \frac{\langle\vec{v}_1-\vec{v}_2
 ### Performance drops
 - Turn off **Show Octree** wireframes, as rendering a highly subdivided tree recursively with many active cells uses many draw calls.
 - Compile with the `--release` flag. Rust's debug mode does not optimize vector arithmetic.
+=======
+Star if you find
+>>>>>>> 73ac11ee3d2d99eb43733bfc708bb05b9ace0077
